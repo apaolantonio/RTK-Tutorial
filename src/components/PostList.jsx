@@ -1,27 +1,9 @@
 /* eslint-disable jsx-a11y/anchor-is-valid */
-import { useEffect, useState } from "react";
-import { getPosts } from "../api/posts";
+import { useSelector } from "react-redux";
+import { postsApi, useGetPostsQuery } from "../api/postsApi";
 
 export default function PostList({ setPostId }) {
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState(null);
-  const [posts, setPosts] = useState(null);
-
-  useEffect(() => {
-    const fetchData = async () => {
-      setIsLoading(true);
-      try {
-        const data = await getPosts();
-        setPosts(data);
-        setError(null);
-      } catch (error) {
-        setError(error);
-        setPosts(null);
-      }
-      setIsLoading(false);
-    };
-    fetchData();
-  }, []);
+  const { data: posts, isLoading, error } = useGetPostsQuery();
 
   if (isLoading) {
     return (
@@ -34,7 +16,7 @@ export default function PostList({ setPostId }) {
   if (error) {
     return (
       <section className="alert alert-danger">
-        Error fetching posts: {error.message}
+        Error fetching posts: {error.error}
       </section>
     );
   }
@@ -52,9 +34,16 @@ export default function PostList({ setPostId }) {
 }
 
 function PostItem({ post, setPostId }) {
+  const { isSuccess } = useSelector(
+    postsApi.endpoints.getPostsById.select(post.id)
+  );
   return (
     <li>
-      <a onClick={() => setPostId(post.id)} href="#">
+      <a
+        className={isSuccess ? "link-success" : ""}
+        onClick={() => setPostId(post.id)}
+        href="#"
+      >
         {post.title}
       </a>
     </li>
